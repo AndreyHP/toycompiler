@@ -32,8 +32,10 @@ Symbol :: enum{
 
 Type :: enum{
     I32,
-    STR
+    STR,
+    NULL
 }
+
 
 Core :: enum{
     PRINT
@@ -56,6 +58,68 @@ Token :: struct{
 Tokens :: []Token
 
 
+
+assign_types :: proc(tks: ^Tokens){
+
+
+    for &t, i in tks {
+
+        if t.simbol == .LABEL{
+            if tks[i + 1].simbol == .COLUM{
+                if tks[i + 2].type == .STR{
+                    t.type = .STR
+                    t.str = tks[i + 3].str
+                }
+            }
+
+            if tks[i + 1].simbol == .COLUM{
+                if tks[i + 2].type == .I32{
+                    t.type = .I32
+                    t.val = tks[i + 3].val
+                }
+            }
+
+        }
+    }
+
+    for t, i in tks {
+        for &tt in tks{
+            if tt.token != "="{
+               if tt.token == t.token{
+                tt.type = t.type
+                tt.str = t.str
+                tt.val = t.val
+                }
+            }
+
+        }
+    }
+}
+
+check_type :: proc(tks: ^Tokens){
+
+
+    for &t, i in tks {
+
+        if t.simbol == .LABEL{
+
+            if tks[i + 1].simbol == .VAL{
+                if tks[i + 2].simbol == .VAL{
+                    if tks[i + 2].type != tks[i].type{
+                        fmt.eprintln("Different Types",tks[i + 2].type, tks[i].type)
+                        os.exit(1)
+                    }
+                }
+
+            }
+
+        }
+    }
+
+
+}
+
+
 parse :: proc() -> Tokens{
 
     lexer: Lexer
@@ -70,6 +134,7 @@ parse :: proc() -> Tokens{
 
     clearToken :: proc(t: ^Token){
         t^.simbol = .NULL
+        t^.type =  .NULL
         t^.token = ""
         t^.val = 0
         t^.str = ""
@@ -93,14 +158,36 @@ parse :: proc() -> Tokens{
 
             if rune(lexer.peak) == '('{
                 s:= strings.clone_from_bytes(charbuf[:])
+                clearToken(&token)
                 token.token = s
                 token.simbol = .LABEL
                 append(&lexer.tokens,token)
                 clear(&charbuf)
             }
 
+             if rune(lexer.peak) == '='{
+                lexer.peak = buffer[i + 1]
+                for unicode.is_space(rune(lexer.peak)){
+                    count +=1
+                    lexer.peak = buffer[i + count]
+                }
+
+                if unicode.is_alpha(rune(lexer.peak)){
+                    s:= strings.clone_from_bytes(charbuf[:])
+                    clearToken(&token)
+                    token.token = s
+                    token.simbol = .LABEL
+                    append(&lexer.tokens,token)
+                    clear(&charbuf)
+                }
+
+            }
+
+
+
             if rune(lexer.peak) == ':'{
                 s:= strings.clone_from_bytes(charbuf[:])
+                clearToken(&token)
                 token.token = s
                 token.simbol = .LABEL
                 append(&lexer.tokens,token)
@@ -111,11 +198,13 @@ parse :: proc() -> Tokens{
                 if rune(lexer.peak) == '3'{
                     lexer.peak = buffer[i + 2]
                     if rune(lexer.peak) == '2'{
+                        clearToken(&token)
                         append(&charbuf,buffer[i + 2])
                         append(&charbuf,buffer[i + 1])
                         append(&charbuf,buffer[i])
                         s:= strings.clone_from_bytes(charbuf[:])
                         token.token = ".double"
+                        token.type = .I32
                         token.simbol = .I32
                         append(&lexer.tokens,token)
                         clear(&charbuf)
@@ -128,11 +217,13 @@ parse :: proc() -> Tokens{
                 if rune(lexer.peak) == 't'{
                     lexer.peak = buffer[i + 2]
                     if rune(lexer.peak) == 'r'{
+                        clearToken(&token)
                         append(&charbuf,buffer[i + 2])
                         append(&charbuf,buffer[i + 1])
                         append(&charbuf,buffer[i])
                         s:= strings.clone_from_bytes(charbuf[:])
                         token.token = ".asciz"
+                        token.type = .STR
                         token.simbol = .STR
                         append(&lexer.tokens,token)
                         clear(&charbuf)
@@ -150,6 +241,7 @@ parse :: proc() -> Tokens{
                 if rune(lexer.peak) != ':'{
                     lexer.peak = buffer[i + 1]
                     if rune(lexer.peak) == ':'{
+                        clearToken(&token)
                         append(&charbuf,buffer[i + 1])
                         append(&charbuf,buffer[i])
                         s:= strings.clone_from_bytes(charbuf[:])
@@ -158,6 +250,7 @@ parse :: proc() -> Tokens{
                         append(&lexer.tokens,token)
                         clear(&charbuf)
                     }else{
+                        clearToken(&token)
                         append(&charbuf,buffer[i])
                         s:= strings.clone_from_bytes(charbuf[:])
                         token.token = s
@@ -248,6 +341,32 @@ parse :: proc() -> Tokens{
                 clearToken(&token)
             }
 
+             if unicode.is_alpha(rune(lexer.peak)){
+                token.token = "="
+                token.val = 0
+                clear(&charbuf)
+                append(&lexer.tokens,token)
+                clearToken(&token)
+
+
+                 for unicode.is_alpha(rune(lexer.peak)){
+                    append(&charbuf,lexer.peak)
+                    count +=1
+                    lexer.peak = buffer[i + count]
+                    skip_count +=1
+                }
+                s = strings.clone_from_bytes(charbuf[:])
+                token.token = s
+                token.simbol = .VAL
+                token.val = 0
+                skip_count +=1
+                skip = true
+                clear(&charbuf)
+                append(&lexer.tokens,token)
+                clearToken(&token)
+            }
+
+
             if unicode.is_punct(rune(lexer.peak)) && rune(lexer.peak) == '"' && skip == false{
                 count +=1
                 lexer.peak = buffer[i + count]
@@ -268,6 +387,7 @@ parse :: proc() -> Tokens{
                 append(&lexer.tokens,token)
                 clearToken(&token)
             }
+
         }
     }
 
@@ -326,7 +446,14 @@ syntax :: proc(token: ^Tokens){
 
 
 
-
+                if next_simbol == .VAL{
+                    next_simbol = token[i + 2].simbol
+                    if next_simbol == .VAL{
+                        fmt.fprintf(f,".text\n")
+                        fmt.fprintf(f,"mov r15, [%v]\n",token[i + 2].token)
+                        fmt.fprintf(f,"mov [%v], r15\n",token[i].token)
+                    }
+                }
 
 
                 if next_simbol == .COLUM{
@@ -467,12 +594,21 @@ main :: proc(){
 
     arg:= os.args[1]
 
+    // arg:= "teste.txt"
+
     file_name:= filepath.stem(arg)
 
     tokens: Tokens
 
     readFile(arg)
     tokens =  parse()
+    assign_types(&tokens)
+    check_type(&tokens)
+
+    // for t in tokens{
+    //     fmt.println(t)
+    // }
+
     syntax(&tokens)
 
     cmd_as_str := fmt.tprintf("as ./.build/%s.s -o ./.build/%s.o", file_name, file_name)
@@ -488,8 +624,5 @@ main :: proc(){
     //     }
     // }
 
-    // for t in tokens{
-    //     fmt.println(t)
-    // }
 
 }

@@ -1,21 +1,12 @@
-name : str = "Hello, anothertest!\n"
-bob : str = "Hi, Bob\n"
-allan : str = "Hi Allan\n"
-bill : str = "Hi Bill\n"
+text : str = "Hello\n"
 
+num : str = "Hi\n"
 
+world : str = "World\n"
 
-anothertest :: (){
-    print(bill)
-}
-
-main :: (){
-    print(name)
-    print(bob)
-    anothertest()
-    teste()
-}
-
-teste :: (){
-    print(allan)
+main :: (){   
+    text = num 
+    print(text)
+    text = world
+    print(text)
 }
