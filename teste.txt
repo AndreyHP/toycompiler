@@ -1,0 +1,21 @@
+name : str = "Hello, anothertest!\n"
+bob : str = "Hi, Bob\n"
+allan : str = "Hi Allan\n"
+bill : str = "Hi Bill\n"
+
+
+
+anothertest :: (){
+    print(bill)
+}
+
+main :: (){
+    print(name)
+    print(bob)
+    anothertest()
+    teste()
+}
+
+teste :: (){
+    print(allan)
+}
