@@ -1,12 +1,17 @@
-text : str = "Hello\n"
+hello : str = "Hello, World\n"
 
-num : str = "Hi\n"
+hi : str = "Hi\n"
 
-world : str = "World\n"
+another :: (){
+    hhi : str = "HI,HI\n"
+    print(hhi)
+    print("Andrey")
+}
 
-main :: (){   
-    text = num 
-    print(text)
-    text = world
-    print(text)
+
+main :: (){
+
+    hello = hi
+    print(hello)
+    another()
 }
