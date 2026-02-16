@@ -36,18 +36,18 @@ main :: proc(){
     assign_types(&tokens)
     type_check(&tokens)
 
-    // code_gen(&tokens)
+    code_gen(&tokens)
 
-    // create_exe(file_name)
+    create_exe(file_name)
 
     // fmt.println(unicode.is_punct('{'))
     // fmt.println(rune(32))
 
 
-    for tks in tokens {
-        fmt.println(tks)
-        // if tks.label{
-        //     fmt.println(tks)
-        // }
-    }
+    // for tks in tokens {
+    //     fmt.println(tks)
+    //     // if tks.label{
+    //     //     fmt.println(tks)
+    //     // }
+    // }
 }

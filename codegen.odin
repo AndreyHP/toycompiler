@@ -40,6 +40,8 @@ code_gen :: proc(tokens: ^[]Token){
 
     current_is_main := false
 
+    buffer_cout: int = 0
+
     for _, i in tokens{
         if tokens[i].label{
 
@@ -65,9 +67,23 @@ code_gen :: proc(tokens: ^[]Token){
 
                  if tokens[i + 2].kind == .DATA && tokens[i].symbol == Core[.PRINT]{
                     if tokens[i + 3].kind == .RPR{
-                        fmt.fprintf(f,".text\n")
-                        fmt.fprintf(f,"lea rdi, [%v]\n",tokens[i + 2].val)
-                        fmt.fprintf(f,"call _print\n")
+                        if tokens[i + 2].type == .STR{
+                            buffer_cout += 1
+                            fmt.fprintf(f,".data\n")
+                            fmt.fprintf(f,"buffer%d: .asciz %v\n",buffer_cout,tokens[i + 2].val)
+                            fmt.fprintf(f,".text\n")
+                            fmt.fprintf(f,"lea rdi, buffer%d\n",buffer_cout)
+                            fmt.fprintf(f,"call _print\n")
+                        }
+                        if tokens[i + 2].type == .I32{
+                            buffer_cout += 1
+                            fmt.fprintf(f,".data\n")
+                            fmt.fprintf(f,"buffer%d: .asciz \"%v\\n\"\n",buffer_cout,tokens[i + 2].val)
+                            fmt.fprintf(f,".text\n")
+                            fmt.fprintf(f,"lea rdi, buffer%d\n",buffer_cout)
+                            fmt.fprintf(f,"call _print\n")
+                        }
+
                     }
                 }
 

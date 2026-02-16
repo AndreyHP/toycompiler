@@ -1,11 +1,13 @@
 hello : str = "Hello, World\n"
 
 hi : str = "Hi\n"
+i : i32 = 10
 
 another :: (){
     hhi : str = "HI,HI\n"
     print(hhi)
-    print("Andrey")
+    print(50)
+    print("Hi toy Compiler!!\n")
 }
 
 

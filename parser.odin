@@ -209,7 +209,7 @@ parse :: proc(data: ^[]byte) -> []Token{
                     append(&parser.tokens,token)
                     clearToken(&token)
                     clear(&parser.charbuf)
-                    parser.skip_count += 2
+                    // parser.skip_count += 0
                     parser.skip = true
 
         }
@@ -309,7 +309,7 @@ parse :: proc(data: ^[]byte) -> []Token{
                     append(&parser.tokens,token)
                     clearToken(&token)
                     clear(&parser.charbuf)
-                    parser.skip_count += 2
+                    parser.skip_count += 1
                     parser.skip = true
 
             }
