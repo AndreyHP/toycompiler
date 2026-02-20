@@ -17,6 +17,106 @@ Parser :: struct{
     ch_count:   int
 }
 
+has_operations :: proc(tokens: ^[dynamic]Token) -> bool{
+
+    has_operations: bool = false
+
+    for tks in tokens{
+        if tks.kind == .ADD{
+            has_operations = true
+            return has_operations
+        }
+        if tks.kind == .MULT{
+            has_operations = true
+            return has_operations
+        }
+        if tks.kind == .SUB{
+            has_operations = true
+            return has_operations
+        }
+        if tks.kind == .DIV{
+            has_operations = true
+            return has_operations
+        }
+    }
+
+    has_operations = false
+    return has_operations
+}
+
+check_operations :: proc(tokens: ^[dynamic]Token){
+    for &tks, i in tokens{
+        if tks.kind == .DATA{
+           if tokens[i + 1].kind == .ADD{
+               if tokens[i + 2].kind == .DATA{
+                    switch v in tks.val{
+                        case string:
+                            fmt.println("Its string")
+                        case i32:
+                            a:= tks.val.(i32)
+                            b:= tokens[i + 2].val.(i32)
+                            tks.val = a + b
+                            ordered_remove(tokens,i + 2)
+                            ordered_remove(tokens,i + 1)
+                    }
+                }
+            }
+
+        if tokens[i + 1].kind == .MULT{
+               if tokens[i + 2].kind == .DATA{
+                    switch v in tks.val{
+                        case string:
+                            fmt.println("Its string")
+                        case i32:
+                            a:= tks.val.(i32)
+                            b:= tokens[i + 2].val.(i32)
+                            tks.val = a * b
+                            ordered_remove(tokens,i + 2)
+                            ordered_remove(tokens,i + 1)
+                    }
+                }
+            }
+
+
+        if tokens[i + 1].kind == .SUB{
+               if tokens[i + 2].kind == .DATA{
+                    switch v in tks.val{
+                        case string:
+                            fmt.println("Its string")
+                        case i32:
+                            a:= tks.val.(i32)
+                            b:= tokens[i + 2].val.(i32)
+                            tks.val = a - b
+                            ordered_remove(tokens,i + 2)
+                            ordered_remove(tokens,i + 1)
+                    }
+                }
+            }
+
+
+
+     if tokens[i + 1].kind == .DIV{
+               if tokens[i + 2].kind == .DATA{
+                    switch v in tks.val{
+                        case string:
+                            fmt.println("Its string")
+                        case i32:
+                            a:= tks.val.(i32)
+                            b:= tokens[i + 2].val.(i32)
+                            tks.val = a / b
+                            ordered_remove(tokens,i + 2)
+                            ordered_remove(tokens,i + 1)
+                    }
+                }
+            }
+
+
+
+        }
+    }
+}
+
+
 parse :: proc(data: ^[]byte) -> []Token{
 
 
@@ -214,9 +314,59 @@ parse :: proc(data: ^[]byte) -> []Token{
 
         }
 
+        if unicode.is_symbol(rune(data[i])){
+            switch rune(data[i]){
+                case'+':
+                    token.kind  = .ADD
+                    token.label =  false
+                    token.type  = .EMPTY
+                    token.line  = parser.line
+                    token.pos   = parser.ch_count
+                    token.symbol = "+"
+                    append(&parser.tokens,token)
+                    clearToken(&token)
+                    clear(&parser.charbuf)
+            }
+        }
+
 
         if unicode.is_punct(rune(data[i])){
             switch rune(data[i]){
+
+
+                case'-':
+                        token.kind  = .SUB
+                        token.label =  false
+                        token.type  = .EMPTY
+                        token.line  = parser.line
+                        token.pos   = parser.ch_count
+                        token.symbol = "-"
+                        append(&parser.tokens,token)
+                        clearToken(&token)
+                        clear(&parser.charbuf)
+
+                case'*':
+                        token.kind  = .MULT
+                        token.label =  false
+                        token.type  = .EMPTY
+                        token.line  = parser.line
+                        token.pos   = parser.ch_count
+                        token.symbol = "*"
+                        append(&parser.tokens,token)
+                        clearToken(&token)
+                        clear(&parser.charbuf)
+
+                case'/':
+                    token.kind  = .DIV
+                    token.label =  false
+                    token.type  = .EMPTY
+                    token.line  = parser.line
+                    token.pos   = parser.ch_count
+                    token.symbol = "/"
+                    append(&parser.tokens,token)
+                    clearToken(&token)
+                    clear(&parser.charbuf)
+
 
                 case'(':
                     token.kind  = .LPR
@@ -336,6 +486,10 @@ parse :: proc(data: ^[]byte) -> []Token{
 
 
 
+    }
+
+    for has_operations(&parser.tokens){
+        check_operations(&parser.tokens)
     }
 
     return parser.tokens[:]

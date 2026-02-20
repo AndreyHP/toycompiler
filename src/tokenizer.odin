@@ -10,6 +10,10 @@ Token_Kind :: enum{
     RPR,
     LB,
     RB,
+    ADD,
+    SUB,
+    MULT,
+    DIV,
     DATA,
     NULL,
 
@@ -42,7 +46,6 @@ Tokenizer :: struct{
     peak_count:int,
     tokens: []Token
 }
-
 
 
 type_check :: proc(tokens: ^[]Token){

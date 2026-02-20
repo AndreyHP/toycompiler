@@ -3,7 +3,7 @@ package main
 import "core:os"
 import "core:fmt"
 import "core:path/filepath"
-// import "core:unicode"
+import "core:unicode"
 
 
 readFile :: proc(path: string) -> []byte{
@@ -23,8 +23,8 @@ readFile :: proc(path: string) -> []byte{
 
 main :: proc(){
 
-    arg:= os.args[1]
-    // arg:= "teste.txt"
+    // arg:= os.args[1]
+    arg:= "teste.txt"
     file_name:= filepath.stem(arg)
 
     data:= readFile(arg)
@@ -40,7 +40,7 @@ main :: proc(){
 
     create_exe(file_name)
 
-    // fmt.println(unicode.is_punct('{'))
+    // fmt.println(unicode.is_punct('+'))
     // fmt.println(rune(32))
 
 

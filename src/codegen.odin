@@ -8,6 +8,7 @@ import "core:strings"
 
 
 
+
 create_exe :: proc(path: string){
     cmd_as_str := fmt.tprintf("as ./.build/%s.s -o ./.build/%s.o", path, path)
     libc.system(strings.unsafe_string_to_cstring(cmd_as_str))
@@ -58,11 +59,27 @@ code_gen :: proc(tokens: ^[]Token){
             if tokens[i + 1].kind == .LPR{
 
                 if tokens[i + 2].label && tokens[i].symbol == Core[.PRINT]{
-                    if tokens[i + 3].kind == .RPR{
-                        fmt.fprintf(f,".text\n")
-                        fmt.fprintf(f,"lea rdi, [%v]\n",tokens[i + 2].symbol)
-                        fmt.fprintf(f,"call _print\n")
+
+                    if tokens[i + 2].type == .STR{
+                         if tokens[i + 3].kind == .RPR{
+                            fmt.fprintf(f,".text\n")
+                            fmt.fprintf(f,"lea rdi, [%v]\n",tokens[i + 2].symbol)
+                            fmt.fprintf(f,"call _print\n")
+                        }
                     }
+
+                    if tokens[i + 2].type == .I32{
+                         if tokens[i + 3].kind == .RPR{
+                            buffer_cout += 1
+                            fmt.fprintf(f,".data\n")
+                            fmt.fprintf(f,"buffer%d: .asciz \"%v\\n\"\n",buffer_cout,tokens[i + 2].val)
+                            fmt.fprintf(f,".text\n")
+                            fmt.fprintf(f,"lea rdi, buffer%d\n",buffer_cout)
+                            fmt.fprintf(f,"call _print\n")
+                        }
+                    }
+
+
                 }
 
                  if tokens[i + 2].kind == .DATA && tokens[i].symbol == Core[.PRINT]{
@@ -140,8 +157,10 @@ code_gen :: proc(tokens: ^[]Token){
 
         if tokens[i].kind == .RB{
             if current_is_main {
+                fmt.fprintf(f,".text\n")
                 fmt.fprintf(f, "jmp _exit\n")
             }else {
+                fmt.fprintf(f,".text\n")
                 fmt.fprintf(f, "ret\n")
             }
         }
